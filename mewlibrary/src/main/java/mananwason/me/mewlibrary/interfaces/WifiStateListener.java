@@ -6,8 +6,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 
-import com.squareup.otto.Bus;
-
+import java.io.OutputStream;
 import java.util.List;
 
 /**
@@ -40,7 +39,7 @@ public interface WifiStateListener {
 
     boolean isWifiEnabled();
 
-    void start(Context context, int samplingRate, String queryNo, String requester, Bus eventBus);
+    void start(Context context, int samplingRate, String queryNo, String requester, OutputStream outputStream);
 
     void stop();
 

@@ -9,16 +9,15 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.Handler;
 
-import com.squareup.otto.Bus;
-
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import mananwason.me.mewlibrary.interfaces.WifiStateListener;
-import mananwason.me.mewlibrary.model.SensorReadingEvent;
 import mananwason.me.mewlibrary.utils.Constants;
 
 
@@ -40,16 +39,16 @@ public class WifiStateRecord implements WifiStateListener {
     private String queryNo = "";
     private String requester;
     private Context context;
-    public Bus bus;
+    public OutputStream out;
 
 
     @Override
-    public void start(Context context, int samplingRate, String queryNumber, String requesterID, Bus eventBus) {
+    public void start(Context context, int samplingRate, String queryNumber, String requesterID, OutputStream outputStream) {
         this.queryNo = queryNumber;
         this.context = context;
         this.requester = requesterID;
         POLL_INTERVAL = samplingRate;
-        this.bus = eventBus;
+        this.out = outputStream;
         if (wifiManager == null) {
             recordedValues = new ArrayList<>();
             wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -61,7 +60,11 @@ public class WifiStateRecord implements WifiStateListener {
     private Runnable mPollTask = new Runnable() {
         public void run() {
             int strength = getStrength();
-            bus.post(new SensorReadingEvent(Constants.SENSORS.WIFI.getValue(), strength));
+            try {
+                out.write(strength);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             recordedValues.add(System.currentTimeMillis() + ", " + strength + ", " + wifiManager.isWifiEnabled());
             mHandler.postDelayed(mPollTask, POLL_INTERVAL);
         }

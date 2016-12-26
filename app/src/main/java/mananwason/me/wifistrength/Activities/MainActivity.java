@@ -13,6 +13,9 @@ import android.view.View;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import mananwason.me.mewlibrary.implementations.WifiStateRecord;
 import mananwason.me.mewlibrary.model.SensorReadingEvent;
 import mananwason.me.wifistrength.R;
@@ -21,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     public static Bus eventBus;
     public static View focus;
     private Snackbar snackbar;
+    private static OutputStream outputStream;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,14 +33,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        eventBus = new Bus();
-        eventBus.register(this);
+        outputStream = new OutputStream() {
+            @Override
+            public void write(int i) throws IOException {
+
+            }
+        };
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 focus = view;
-                new WifiStateRecord().start(MainActivity.this, 1000, "ABC", "ABC", eventBus);
+                new WifiStateRecord().start(MainActivity.this, 1000, "ABC", "ABC", outputStream);
                 snackbar = Snackbar.make(view, "ABC", Snackbar.LENGTH_INDEFINITE);
                 snackbar.show();
 
@@ -68,6 +77,6 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe
     public void newReadingReceived(SensorReadingEvent sensorReading) {
         Log.d("TAG", sensorReading.getReading() + " " + sensorReading.getSensorName());
-        snackbar.setText(sensorReading.getReading()+"");
+        snackbar.setText(sensorReading.getReading() + "");
     }
 }
